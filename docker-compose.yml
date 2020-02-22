@@ -1,0 +1,84 @@
+version: '3.7'
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    hostname: "nginx"
+    networks:
+      net:
+        ipv4_address: "172.21.0.2"
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Kiev
+    volumes:
+      - ./www/:/var/www/
+      - ./nginx/conf/conf.d:/etc/nginx/conf.d
+      - ./nginx/log/:/var/log/nginx/
+    privileged: true 
+    ports:
+      - "80:80"
+      - "443:443"
+    tty: true
+
+  php: 
+    #=========================
+    # fzsys/php7.3, fzsys/php7.2 also available
+    #=========================
+    image: fzsys/php7.4
+
+    #=========================
+    # change "image" tag above to build below if you need to rebuild php image with oter parameters
+    #=========================
+    #build:
+    #  context: ./php
+    #  dockerfile: Dockerfile
+
+    container_name: php
+    hostname: "php"
+    networks:
+      net:
+        ipv4_address: "172.21.0.3"
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Kiev
+    volumes:
+      - ./www:/var/www
+      - ./php/conf/custom.user.ini:/usr/local/etc/php/conf.d/custom.user.ini
+      - ./php/xdebug_profiler/:/var/xdebug_profiler/
+    working_dir: /var/www
+    privileged: true
+    ports:
+      - "9000:9000"
+    environment:
+      XDEBUG_CONFIG: idekey=PHPSTORM
+    tty: true
+
+  mysql:
+    image: mariadb
+    container_name: mysql
+    hostname: "mysql"
+    networks:
+      net:
+        ipv4_address: "172.21.0.4"
+    restart: unless-stopped
+    volumes:
+      - ./mysql/data:/var/lib/mysql/
+      - ./mysql/conf:/etc/mysql/
+    privileged: true
+    environment:
+      - TZ=Europe/Kiev
+      - MYSQL_DATABASE=${MYSQL_TEST_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - '3306:3306'
+    tty: true
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 172.21.0.0/24
+
