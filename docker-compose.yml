@@ -47,8 +47,8 @@ services:
       - ./php/xdebug_profiler/:/var/xdebug_profiler/
     working_dir: /var/www
     privileged: true
-    ports:
-      - "9000:9000"
+    #ports:
+    #  - "9000:9000"
     environment:
       XDEBUG_CONFIG: idekey=PHPSTORM
     tty: true
